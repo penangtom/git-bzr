@@ -13,13 +13,11 @@ port of the Ruby original, with thanks.
 Does it work?
 -------------
 
-No, not for me - either this version, nor the Ruby original, nor the
-shell script port.  I am using git_ version 1.7.1, bzr_ version 2.0.2,
-and the current development version (revision 268) of bzr-fastimport_.
-It looks like this setup will allow me to pull in a bzr repo, and push
-back git commits to that repo, but it will crash if I try and fetch a
-new commit from the bzr repo.  Here's a test script showing the
-problem::
+Yes, at the moment, it does.  I am using git_ version 1.7.1, bzr_ version
+2.0.2, and the current development version (revision 268) of
+bzr-fastimport_.  It looks like this setup will allow me to pull in a
+bzr repo, and push back git commits to that repo, and fetch a new commit
+from the bzr repo.  Here's a test script that should work::
 
   mkdir test-git
   mkdir test-bzr
@@ -51,13 +49,7 @@ problem::
   cd ../test-git
   git bzr fetch bzr-repo
 
-results in an error from ``git fast-import``::
-
-   fatal: mark :0 not declared
-
-I don't know enough about how this works to understand the error.  
-
-There's a bug report from March 2009 describing the problem:
+There's a bug report from March 2009 describing the problems that I've tried to hack round:
 https://bugs.launchpad.net/bzr-fastimport/+bug/347729
 
 I'd be happy to hear from y'all.

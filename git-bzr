@@ -41,6 +41,7 @@ def fetch(remote):
              % locals())
     elif isfile(git_map) and isfile(bzr_map):
         print 'Updating remote', remote
+        _do_colons(bzr_map, bzr_map, 'remove')
         old_rev = rev_parse('bzr/%s' % remote)
         shcall('(bzr fast-export '
                '--plain '
@@ -59,18 +60,22 @@ def fetch(remote):
     else:
         raise OSError("One of the mapfiles is missing! "
                       "Something went wrong!")
-    _add_colons(bzr_map)
     
 
-def _add_colons(fname):
-    ''' Add colons to the front of commit numbers '''
-    in_f = open(fname, 'rt')
+def _do_colons(in_fname, out_fname, action='add'):
+    ''' Add or remove colons to / from front of commit numbers '''
+    in_f = open(in_fname, 'rt')
     lines = []
-    regex = re.compile('^(\d+ )')
+    if action == 'add':
+        regex = re.compile(r'^(\d+ )')
+        substr = r':\1'
+    elif action == 'remove':
+        regex = re.compile(r'^:(\d+ )')
+        substr = r'\1'
     for line in in_f:
-        lines.append(regex.sub(r':\1', line))
+        lines.append(regex.sub(substr, line))
     in_f.close()
-    out_f = open(fname, 'wt')
+    out_f = open(out_fname, 'wt')
     out_f.writelines(lines)
     out_f.close()
     
@@ -87,6 +92,8 @@ def push(remote):
     if not isfile(git_map) or not isfile(bzr_map):
         raise OSError("We do not have refmapping yet. "
                       "Then how can I push?")
+    bzr_map_colons = bzr_map + '_colons'
+    _do_colons(bzr_map, bzr_map, 'add')
     shcall('(git fast-export '
          '--import-marks=%(git_map)s '
          '--export-marks=%(git_map)s '
