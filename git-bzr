@@ -3,6 +3,7 @@ import os
 from os.path import join as pjoin, abspath, isdir, isfile, dirname
 import sys
 import subprocess
+import re
 
 
 def add(name, location):
@@ -34,6 +35,7 @@ def fetch(remote):
                '--export-marks=%(bzr_map)s '
                '--git-branch=bzr/%(remote)s '
                '%(location)s) | '
+               'sed "s/reset\ refs\/tags\/version\ /reset\ refs\/tags\//" | '
                '(git fast-import '
                '--export-marks=%(git_map)s)'
              % locals())
@@ -57,7 +59,21 @@ def fetch(remote):
     else:
         raise OSError("One of the mapfiles is missing! "
                       "Something went wrong!")
+    _add_colons(bzr_map)
+    
 
+def _add_colons(fname):
+    ''' Add colons to the front of commit numbers '''
+    in_f = open(fname, 'rt')
+    lines = []
+    regex = re.compile('^(\d+ )')
+    for line in in_f:
+        lines.append(regex.sub(r':\1', line))
+    in_f.close()
+    out_f = open(fname, 'wt')
+    out_f.writelines(lines)
+    out_f.close()
+    
 
 def push(remote):
     location = get_location(remote)

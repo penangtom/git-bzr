@@ -14,10 +14,12 @@ Does it work?
 -------------
 
 No, not for me - either this version, nor the Ruby original, nor the
-shell script port.  I am using git_ version 1.6.5.2, bzr_ version 2.0.2,
+shell script port.  I am using git_ version 1.7.1, bzr_ version 2.0.2,
 and the current development version (revision 268) of bzr-fastimport_.
-At least with this combination, trying to push back to a bzr_ repository
-causes a crash with a ``KeyError``::
+It looks like this setup will allow me to pull in a bzr repo, and push
+back git commits to that repo, but it will crash if I try and fetch a
+new commit from the bzr repo.  Here's a test script showing the
+problem::
 
   mkdir test-git
   mkdir test-bzr
@@ -26,20 +28,32 @@ causes a crash with a ``KeyError``::
   echo 'text' > afile
   bzr add afile
   bzr commit -m 'A file'
-  cd ..
-  cd test-git
+  cd ../test-git
+  # make git repo and import
   git init
   git bzr add bzr-repo ../test-bzr
   git bzr fetch bzr-repo
+  # make a git commit and push
   git co -b bzr-local bzr/bzr-repo
   echo 'more text' >> afile
   git commit -am 'More text'
   git bzr push bzr-repo
+  # Make another one and push
+  echo 'more text again' >> afile
+  git commit -am 'More text again'
+  git bzr push bzr-repo
+  # Make another bzr commit
+  cd ../test-bzr
+  echo 'even more text' > another_file
+  bzr add another_file
+  bzr commit -m 'Another file'
+  # import it - whoops - crash
+  cd ../test-git
+  git bzr fetch bzr-repo
 
-results in::
+results in an error from ``git fast-import``::
 
-   ABORT: exception occurred processing commit :3
-   bzr: ERROR: exceptions.KeyError: ':1'
+   fatal: mark :0 not declared
 
 I don't know enough about how this works to understand the error.  
 
